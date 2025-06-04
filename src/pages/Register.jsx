@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../api'; // ✅ fixed path
+import api from '../api/api'; // ✅ fixed path
 
 function Register() {
   const [formData, setFormData] = useState({

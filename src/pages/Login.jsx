@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api'; // ✅ fixed path
+import api from '../api/api'; // ✅ fixed path
 
 function Login() {
   const navigate = useNavigate();

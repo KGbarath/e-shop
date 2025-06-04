@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { CartContext } from '../context/CartContext';
-import api from '../api';
+import api from '../api/api';
 
 function Checkout() {
   const { cart, setCart } = useContext(CartContext);
