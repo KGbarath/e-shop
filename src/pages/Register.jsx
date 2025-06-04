@@ -1,45 +1,32 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/Register.css';
 import api from '../api/api'; // ✅ fixed
 
-
-
-function Register() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-  });
-  const [error, setError] = useState('');
+const Register = () => {
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
 
   const handleChange = (e) => {
-    setFormData((prevData) => ({ ...prevData, [e.target.name]: e.target.value }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleRegister = async () => {
     try {
-      await api.post('/auth/register', formData);
-      navigate('/login');
+      const res = await api.post('/auth/register', form);
+      localStorage.setItem('token', res.data.token);
+      alert('Registration successful!');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      alert(err.response?.data?.message || 'Registration failed');
     }
   };
 
   return (
-    <div className="register-container">
-      <form onSubmit={handleSubmit}>
-        <h2>Register</h2>
-        {error && <p className="error">{error}</p>}
-        <input type="text" name="username" placeholder="Username" onChange={handleChange} required />
-        <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-        <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-        <button type="submit">Register</button>
-      </form>
+    <div>
+      <h2>Register</h2>
+      <input name='name' placeholder='Name' onChange={handleChange} />
+      <input name='email' placeholder='Email' onChange={handleChange} />
+      <input name='password' placeholder='Password' type='password' onChange={handleChange} />
+      <button onClick={handleRegister}>Register</button>
     </div>
   );
-}
+};
 
 export default Register;
