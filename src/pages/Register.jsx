@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../api'; // ✅ Correct path to axios config
+import api from '../api'; // ✅ correct path
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -10,10 +10,7 @@ function Register() {
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -31,9 +28,29 @@ function Register() {
       <form onSubmit={handleSubmit}>
         <h2>Register</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <input name="username" placeholder="Username" onChange={handleChange} required />
-        <input name="email" placeholder="Email" onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
+        <input
+          name="username"
+          placeholder="Username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
         <button type="submit">Register</button>
       </form>
     </div>

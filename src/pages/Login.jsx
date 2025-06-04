@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api'; // ✅ Correct path to axios config
+import api from '../api'; // ✅ correct path
 
 function Login() {
   const navigate = useNavigate();
@@ -8,10 +8,7 @@ function Login() {
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -19,7 +16,7 @@ function Login() {
     try {
       const res = await api.post('/auth/login', formData);
       localStorage.setItem('token', res.data.token);
-      alert('Login successful');
+      alert('Login successful!');
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
@@ -31,8 +28,22 @@ function Login() {
       <form onSubmit={handleSubmit}>
         <h2>Login</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <input name="email" placeholder="Email" onChange={handleChange} required />
-        <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
         <button type="submit">Login</button>
       </form>
     </div>
