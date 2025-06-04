@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { CartContext } from '../context/CartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../api/api'; // ✅ fixed
+
 
 function Products() {
   const { addToCart } = useContext(CartContext);
