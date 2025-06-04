@@ -1,2 +1,7 @@
-@import url('./styles/global.css');
-@import url('./styles/components.css');
+:root {
+  --primary-color: #f8c1cc;
+  --secondary-color: #ff6f61;
+  --background-gradient: linear-gradient(135deg, #f5f5f5 0%, #e3f2fd 100%);
+  --text-color: #333333;
+  --font-family: 'Poppins', sans-serif;
+}

@@ -1,36 +1,58 @@
-import { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import OrderSummary from '../components/OrderSummary';
+import axios from 'axios';
 
 function Orders() {
-  const { user } = useContext(AuthContext);
+  const { user, verifyToken } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (user) {
-      axios
-        .get('http://localhost:5000/api/orders', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        .then((res) => setOrders(res.data))
-        .catch((error) => console.error('Failed to fetch orders:', error));
-    }
-  }, [user]);
+    const fetchOrders = async () => {
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+      const isTokenValid = await verifyToken();
+      if (!isTokenValid) {
+        navigate('/login');
+        return;
+      }
+      try {
+        const res = await axios.get('http://localhost:5000/api/orders', {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
+        setOrders(res.data);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError('Failed to load orders. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [user, verifyToken, navigate]);
 
-  if (!user) return <div className="container">Please log in</div>;
+  if (loading) return <div className="container">Loading orders...<span className="loader"></span></div>;
+  if (error) return <div className="container">{error}</div>;
 
   return (
     <div className="container">
-      <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>Your Orders</h2>
-      {orders.length === 0 ? (
-        <p>No orders found</p>
-      ) : (
-        <div>
+      <h2>Your Orders</h2>
+      {orders.length > 0 ? (
+        <div className="orders-list">
           {orders.map((order) => (
-            <OrderSummary key={order._id} order={order} />
+            <div key={order._id} className="order-card">
+              <OrderSummary order={order} />
+            </div>
           ))}
         </div>
+      ) : (
+        <p>You have no orders yet.</p>
       )}
     </div>
   );

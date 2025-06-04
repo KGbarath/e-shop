@@ -1,58 +1,77 @@
 import React, { useState } from 'react';
-import api from '../api'; // ✅ correct path
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function Register() {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-  });
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState({ name: '', email: '', password: '' });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setUserData({ ...userData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     try {
-      await api.post('/auth/register', formData);
-      alert('Registered successfully! Please login.');
+      const res = await axios.post('http://localhost:5000/api/auth/register', userData);
+      if (res.status === 201) {
+        alert('Registration successful! Please log in.');
+        navigate('/login');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || 'Failed to register. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="register">
+    <div className="container">
+      <h2>Register</h2>
+      {error && <p style={{ color: '#ff6f61' }}>{error}</p>}
       <form onSubmit={handleSubmit}>
-        <h2>Register</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <input
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Register</button>
+        <div className="form-group">
+          <label>Name:</label>
+          <input
+            type="text"
+            name="name"
+            value={userData.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={userData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={userData.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <button type="submit" disabled={loading}>
+          {loading ? <span>Registering... <span className="loader"></span></span> : 'Register'}
+        </button>
       </form>
+      <p style={{ marginTop: '10px' }}>
+        Already have an account? <a href="/login">Login here</a>
+      </p>
     </div>
   );
 }

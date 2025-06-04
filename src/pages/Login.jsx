@@ -1,51 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api'; // ✅ correct path
+import { AuthContext } from '../context/AuthContext';
 
 function Login() {
+  const { login, authError } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const res = await api.post('/auth/login', formData);
-      localStorage.setItem('token', res.data.token);
-      alert('Login successful!');
+    setLoading(true);
+    const success = await login(credentials.email, credentials.password);
+    setLoading(false);
+    if (success) {
       navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
     }
   };
 
   return (
-    <div className="login">
+    <div className="container">
+      <h2>Login</h2>
+      {authError && <p style={{ color: '#ff6f61' }}>{authError}</p>}
       <form onSubmit={handleSubmit}>
-        <h2>Login</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Login</button>
+        <div className="form-group">
+          <label>Email:</label>
+          <input
+            type="email"
+            name="email"
+            value={credentials.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Password:</label>
+          <input
+            type="password"
+            name="password"
+            value={credentials.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <button type="submit" disabled={loading}>
+          {loading ? <span>Logging in... <span className="loader"></span></span> : 'Login'}
+        </button>
       </form>
+      <p style={{ marginTop: '10px' }}>
+        Don't have an account? <a href="/register">Register here</a>
+      </p>
     </div>
   );
 }
