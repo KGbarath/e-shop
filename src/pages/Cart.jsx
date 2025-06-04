@@ -1,75 +1,64 @@
-import { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
-import '../styles/Cart.css';
+import api from '../api';
 
 function Cart() {
-  const { cart, loading, error, removeFromCart, updateQuantity } = useContext(CartContext);
+  const { cart, setCart } = useContext(CartContext);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const res = await api.get('/cart');
+        setCart(res.data);
+      } catch (err) {
+        setError('Failed to load cart. Please login again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCart();
+  }, [setCart]);
+
+  const handleRemove = async (productId) => {
+    try {
+      await api.delete(`/cart/${productId}`);
+      setCart(prev => ({
+        ...prev,
+        items: prev.items.filter(item => item.productId._id !== productId)
+      }));
+    } catch (err) {
+      setError('Failed to remove item.');
+    }
+  };
 
   const handleCheckout = () => {
     navigate('/checkout');
   };
 
-  if (loading) {
-    return (
-      <div className="container">
-        <h2>Loading Cart...</h2>
-        <span className="loader"></span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <h2>Error</h2>
-        <p>{error}</p>
-      </div>
-    );
-  }
+  if (loading) return <div>Loading Cart...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
-    <div className="container">
+    <div>
       <h2>Your Cart</h2>
       {cart?.items?.length > 0 ? (
         <>
-          <div className="cart-items">
+          <ul>
             {cart.items.map((item) => (
-              item.productId?._id ? (
-                <div key={item.productId._id} className="cart-item">
-                  <h3>{item.productId.name}</h3>
-                  <p>Price: ${item.productId.price.toFixed(2)}</p>
-                  <p>Quantity: {item.quantity}</p>
-                  <button
-                    className="btn"
-                    onClick={() => updateQuantity(item.productId._id, item.quantity + 1)}
-                  >
-                    +
-                  </button>
-                  <button
-                    className="btn"
-                    onClick={() => updateQuantity(item.productId._id, item.quantity - 1)}
-                    disabled={item.quantity <= 1}
-                  >
-                    -
-                  </button>
-                  <button
-                    className="btn"
-                    onClick={() => removeFromCart(item.productId._id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : null
+              <li key={item.productId._id}>
+                {item.productId.name} - Qty: {item.quantity}
+                <button onClick={() => handleRemove(item.productId._id)}>Remove</button>
+              </li>
             ))}
-          </div>
-          <button className="btn checkout-btn" onClick={handleCheckout}>
-            Proceed to Checkout
-          </button>
+          </ul>
+          <button onClick={handleCheckout}>Checkout</button>
         </>
       ) : (
-        <p>Your cart is empty.</p>
+        <p>No items in cart.</p>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://backend-8ftw.onrender.com/api',
+  baseURL: process.env.REACT_APP_API_URL || 'https://backend-8ftw.onrender.com/api',
 });
 
 api.interceptors.request.use((config) => {
