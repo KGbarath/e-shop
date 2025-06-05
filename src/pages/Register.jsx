@@ -1,79 +1,59 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // Use useAuth instead
+import axios from '../api';
 
-function Register() {
+const Register = () => {
+  const { setUser } = useAuth(); // Access setUser via useAuth
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({ name: '', email: '', password: '' });
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    setUserData({ ...userData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', userData);
-      if (res.status === 201) {
-        alert('Registration successful! Please log in.');
-        navigate('/login');
-      }
+      const response = await axios.post('/auth/register', { name, email, password });
+      localStorage.setItem('token', response.data.token);
+      setUser(response.data.user);
+      navigate('/');
     } catch (err) {
-      console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Failed to register. Please try again.');
-    } finally {
-      setLoading(false);
+      setError('Registration failed');
     }
   };
 
   return (
-    <div className="container">
+    <div>
       <h2>Register</h2>
-      {error && <p style={{ color: '#ff6f61' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={userData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={userData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={userData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? <span>Registering... <span className="loader"></span></span> : 'Register'}
-        </button>
-      </form>
-      <p style={{ marginTop: '10px' }}>
-        Already have an account? <a href="/login">Login here</a>
-      </p>
+      {error && <p>{error}</p>}
+      <div className="form-group">
+        <label>Name:</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+      <div className="form-group">
+        <label>Email:</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div className="form-group">
+        <label>Password:</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <button onClick={handleRegister}>Register</button>
     </div>
   );
-}
+};
 
 export default Register;

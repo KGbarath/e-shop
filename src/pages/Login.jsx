@@ -1,61 +1,50 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext'; // Use useAuth instead
+import axios from '../api';
 
-function Login() {
-  const { login, authError } = useContext(AuthContext);
+const Login = () => {
+  const { setUser } = useAuth(); // Access setUser via useAuth
   const navigate = useNavigate();
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    const success = await login(credentials.email, credentials.password);
-    setLoading(false);
-    if (success) {
+    try {
+      const response = await axios.post('/auth/login', { email, password });
+      localStorage.setItem('token', response.data.token);
+      setUser(response.data.user);
       navigate('/');
+    } catch (err) {
+      setError('Invalid credentials');
     }
   };
 
   return (
-    <div className="container">
+    <div>
       <h2>Login</h2>
-      {authError && <p style={{ color: '#ff6f61' }}>{authError}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={credentials.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={credentials.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit" disabled={loading}>
-          {loading ? <span>Logging in... <span className="loader"></span></span> : 'Login'}
-        </button>
-      </form>
-      <p style={{ marginTop: '10px' }}>
-        Don't have an account? <a href="/register">Register here</a>
-      </p>
+      {error && <p>{error}</p>}
+      <div className="form-group">
+        <label>Email:</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div className="form-group">
+        <label>Password:</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <button onClick={handleLogin}>Login</button>
     </div>
   );
-}
+};
 
 export default Login;
